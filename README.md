@@ -1,6 +1,6 @@
 # IntroFuse
 
-IntroFuse is an AI-powered web application that helps broadcast radio DJs create compelling song introduction scripts by connecting current content with the emotional essence of songs. 
+IntroFuse is an AI-powered web application that helps broadcast radio DJs create compelling song introduction scripts by connecting current content with the emotional essence of songs. Generate intro scripts that tie any topic to the next song - merging relevant points from trending stories, topics or user content with the emotions, context and meaning of any song to create memorable moments that seamlessly tie content to music. 
 
 ## Features
 
