@@ -21,8 +21,13 @@ class ClaudeService {
   private model: string
 
   constructor() {
-    this.apiKey = process.env.CLAUDE_API_KEY || ''
+    this.apiKey = process.env.CLAUDE_API_KEY || 'placeholder-key'
     this.model = MODEL_SONNET // Default to Sonnet
+    
+    // Validate API key in production
+    if (process.env.NODE_ENV === 'production' && this.apiKey === 'placeholder-key') {
+      console.error('Missing CLAUDE_API_KEY in production environment')
+    }
   }
 
   setModel(model: 'sonnet' | 'opus') {

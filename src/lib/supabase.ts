@@ -1,8 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+
+// Validate environment variables in production
+if (process.env.NODE_ENV === 'production' && supabaseUrl === 'https://placeholder.supabase.co') {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL in production environment')
+}
+if (process.env.NODE_ENV === 'production' && supabaseAnonKey === 'placeholder-key') {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY in production environment')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -11,8 +19,8 @@ export async function createServerSupabaseClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
     {
       cookies: {
         getAll() {
