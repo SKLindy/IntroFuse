@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { claudeService } from '@/lib/claude'
 import { AuthService } from '@/lib/auth'
 import { ContentType } from '@/types/database'
+import { extractUrlContent } from '@/lib/content-extractor'
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,13 +63,34 @@ export async function POST(request: NextRequest) {
         .single()
     }
 
-    // Step 2: Analyze content
-    console.log('Content being analyzed:', { contentSource: contentSource.substring(0, 200) + '...', contentType })
-    const contentAnalysis = await claudeService.analyzeContent(contentSource, contentType)
+    // Step 2: Extract content if URL
+    let actualContent = contentSource
+    if (contentType === 'url') {
+      console.log('Extracting content from URL:', contentSource)
+      try {
+        actualContent = await extractUrlContent(contentSource)
+        console.log('URL content extracted, length:', actualContent.length)
+        console.log('Content preview:', actualContent.substring(0, 300) + '...')
+      } catch (error: any) {
+        console.error('URL extraction failed:', error)
+        return NextResponse.json(
+          { error: `Failed to extract content from URL: ${error.message}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Step 3: Analyze content
+    console.log('Content being analyzed:', { 
+      contentType, 
+      contentLength: actualContent.length,
+      contentPreview: actualContent.substring(0, 200) + '...' 
+    })
+    const contentAnalysis = await claudeService.analyzeContent(actualContent, contentType)
     console.log('Content analysis result:', contentAnalysis)
 
-    // Step 3: Content compliance check
-    const complianceCheck = await claudeService.checkContentCompliance(contentSource)
+    // Step 4: Content compliance check
+    const complianceCheck = await claudeService.checkContentCompliance(actualContent)
     if (!complianceCheck.isCompliant) {
       return NextResponse.json(
         { 
@@ -79,7 +101,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Step 4: Generate scripts
+    // Step 5: Generate scripts
     const scriptResult = await claudeService.generateScripts(
       contentAnalysis,
       songAnalysis,
@@ -88,7 +110,7 @@ export async function POST(request: NextRequest) {
       selectedStyle
     )
 
-    // Step 5: Save content session
+    // Step 6: Save content session
     const { data: session, error: sessionError } = await supabase
       .from('content_sessions')
       .insert({
