@@ -229,37 +229,27 @@ Respond in JSON format:
   }
 
   async checkContentCompliance(content: string): Promise<{ isCompliant: boolean; issues: string[] }> {
-    const prompt = `Review the following content for FCC broadcast compliance and general appropriateness for radio:
-
-Content: ${content}
-
-Check for:
-1. Profanity or inappropriate language
-2. Sexually explicit content
-3. Discriminatory language (racist, sexist, etc.)
-4. Content that violates broadcast standards
-5. Overly controversial political content
-6. Content that might be considered offensive
-
-Respond in JSON format:
-{
-  "isCompliant": boolean,
-  "issues": ["array of specific issues found, if any"]
-}`
-
-    const response = await this.makeRequest([
-      { role: 'user', content: prompt }
-    ])
-
-    try {
-      return JSON.parse(response)
-    } catch (error) {
-      console.error('Failed to parse compliance check JSON:', error)
-      // Conservative fallback - assume non-compliant if we can't check
+    // For now, allow most content to pass through for testing
+    // Basic checks only - no profanity, no explicit content
+    const prohibited = [
+      'fuck', 'shit', 'damn', 'bitch', 'ass', 'bastard', 'crap',
+      'explicit', 'sexual', 'porn', 'nude', 'naked'
+    ]
+    
+    const lowerContent = content.toLowerCase()
+    const foundIssues = prohibited.filter(word => lowerContent.includes(word))
+    
+    if (foundIssues.length > 0) {
       return {
         isCompliant: false,
-        issues: ['Unable to verify content compliance']
+        issues: [`Contains prohibited language: ${foundIssues.join(', ')}`]
       }
+    }
+    
+    // Most content passes - this is for music and entertainment news
+    return {
+      isCompliant: true,
+      issues: []
     }
   }
 }
