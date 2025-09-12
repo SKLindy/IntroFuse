@@ -63,7 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Analyze content
+    console.log('Content being analyzed:', { contentSource: contentSource.substring(0, 200) + '...', contentType })
     const contentAnalysis = await claudeService.analyzeContent(contentSource, contentType)
+    console.log('Content analysis result:', contentAnalysis)
 
     // Step 3: Content compliance check
     const complianceCheck = await claudeService.checkContentCompliance(contentSource)

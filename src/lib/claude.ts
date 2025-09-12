@@ -171,40 +171,47 @@ Respond in JSON format with the following structure:
 
     const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.Casual
 
-    const prompt = `You are an expert radio DJ script writer. Create two song introduction scripts based on the following information:
+    const prompt = `You are a master radio DJ known for creating brilliant, unexpected connections between current events and music. Your specialty is finding the artful thread that ties seemingly unrelated content to songs in clever, entertaining ways that surprise and delight listeners.
 
-CONTENT ANALYSIS:
+CURRENT CONTENT TO CONNECT:
 Summary: ${contentAnalysis?.summary || 'No content analysis available'}
 Key Points: ${contentAnalysis?.key_points?.join(', ') || 'No key points'}
-Topics: ${contentAnalysis?.topics?.join(', ') || 'No topics'}
-Tone: ${contentAnalysis?.tone || 'Neutral'}
+Main Topics: ${contentAnalysis?.topics?.join(', ') || 'No topics'}
+Content Tone: ${contentAnalysis?.tone || 'Neutral'}
 
-SONG ANALYSIS:
-Song: "${songTitle}" by ${artist}
-Emotional Tone: ${songAnalysis.emotional_tone}
-Themes: ${songAnalysis.themes?.join(', ') || 'No themes available'}
-Mood: ${songAnalysis.mood}
-Meaning: ${songAnalysis.meaning}
-Genre: ${songAnalysis.genre || 'Unknown'}
-Era: ${songAnalysis.era || 'Unknown'}
+SONG TO INTRODUCE:
+"${songTitle}" by ${artist}
+Emotional Core: ${songAnalysis.emotional_tone}
+Key Themes: ${songAnalysis.themes?.join(', ') || 'Universal human themes'}
+Song Mood: ${songAnalysis.mood}
+Song Meaning: ${songAnalysis.meaning}
+Musical Style: ${songAnalysis.genre || 'Timeless'} from ${songAnalysis.era || 'the past'}
 
-STYLE DIRECTION: ${stylePrompt}
+WRITING STYLE: ${stylePrompt}
 
-REQUIREMENTS:
-1. SHORT SCRIPT (5-10 seconds, ~25-50 words): Perfect for quick transitions
-2. LONG SCRIPT (15-20 seconds, ~75-100 words): Build momentum and set the mood
-3. Both scripts should connect the content with the song in a meaningful way
-4. Maintain broadcast standards (FCC compliant)
-5. Be authentic and engaging
-6. Include performance notes for each script
+YOUR MISSION: Create scripts that make an ARTFUL, UNEXPECTED CONNECTION between the content and the song. This is NOT about just introducing a song - it's about creating a "wow, I never would have thought to connect those two things" moment. Find the clever thread, the surprising parallel, the deeper human truth that links them.
+
+CRITICAL REQUIREMENTS:
+1. MUST directly reference and incorporate the actual content provided - don't just make generic statements
+2. Find the unexpected connection - avoid obvious relationships
+3. Create intrigue and "aha!" moments for listeners
+4. SHORT SCRIPT (5-10 seconds, ~25-50 words): A sharp, clever connection
+5. LONG SCRIPT (15-20 seconds, ~75-100 words): Build the connection with more detail and sophistication
+6. Both scripts should feel like revelations, not just transitions
+7. Use broadcast-appropriate language throughout
+
+EXAMPLES of the style we want:
+- Content about space exploration + Love song → "Speaking of exploring the unknown..."
+- Story about AI advancement + Classic rock song → "Just like this next song predicted decades ago..."
+- News about economic changes + Folk song → "Turns out some truths never change..."
 
 Respond in JSON format:
 {
-  "shortScript": "5-10 second script text",
-  "longScript": "15-20 second script text",
+  "shortScript": "5-10 second script with artful connection",
+  "longScript": "15-20 second script with sophisticated connection",
   "performanceNotes": {
-    "short": "performance guidance for short script",
-    "long": "performance guidance for long script"
+    "short": "performance guidance emphasizing the connection",
+    "long": "performance guidance for building the revelation"
   }
 }`
 
