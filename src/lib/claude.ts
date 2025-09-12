@@ -262,15 +262,23 @@ Respond in JSON format:
   }
 
   async checkContentCompliance(content: string): Promise<{ isCompliant: boolean; issues: string[] }> {
-    // For now, allow most content to pass through for testing
-    // Basic checks only - no profanity, no explicit content
+    // Basic content compliance for broadcast standards
+    // Use word boundaries to avoid false positives (e.g., "assistant" containing "ass")
     const prohibited = [
-      'fuck', 'shit', 'damn', 'bitch', 'ass', 'bastard', 'crap',
+      '\\bfuck\\b', '\\bshit\\b', '\\bdamn\\b', '\\bbitch\\b', 
+      '\\bass\\b', '\\bbastard\\b', '\\bcrap\\b',
       'explicit', 'sexual', 'porn', 'nude', 'naked'
     ]
     
     const lowerContent = content.toLowerCase()
-    const foundIssues = prohibited.filter(word => lowerContent.includes(word))
+    const foundIssues = []
+    
+    for (const pattern of prohibited) {
+      const regex = new RegExp(pattern, 'gi')
+      if (regex.test(lowerContent)) {
+        foundIssues.push(pattern.replace(/\\b/g, ''))
+      }
+    }
     
     if (foundIssues.length > 0) {
       return {
