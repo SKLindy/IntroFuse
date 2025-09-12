@@ -1,8 +1,7 @@
 import { Song, ContentSession } from '@/types/database'
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL_SONNET = 'claude-3-5-sonnet-20241022'
-const MODEL_OPUS = 'claude-3-5-sonnet-20241022'
+const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022' // Latest Claude 3.5 Sonnet model
 
 interface ClaudeMessage {
   role: 'user' | 'assistant'
@@ -22,7 +21,7 @@ class ClaudeService {
 
   constructor() {
     this.apiKey = process.env.CLAUDE_API_KEY || 'placeholder-key'
-    this.model = MODEL_SONNET // Default to Sonnet
+    this.model = CLAUDE_MODEL // Using latest Claude 3.5 Sonnet
     
     // Debug API key loading
     if (typeof window === 'undefined') {
@@ -40,9 +39,6 @@ class ClaudeService {
     }
   }
 
-  setModel(model: 'sonnet' | 'opus') {
-    this.model = model === 'opus' ? MODEL_OPUS : MODEL_SONNET
-  }
 
   private async makeRequest(messages: ClaudeMessage[]): Promise<string> {
     if (!this.apiKey || this.apiKey === 'placeholder-key') {
