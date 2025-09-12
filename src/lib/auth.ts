@@ -23,12 +23,46 @@ export class AuthService {
         .single()
 
       if (userError || !user) {
+        // If user doesn't exist in our users table but is authenticated,
+        // create the profile (this handles email confirmation flow)
+        if (authUser.email_confirmed_at) {
+          const username = authUser.user_metadata?.username || `user_${authUser.id.slice(0, 8)}`
+          const stationId = authUser.user_metadata?.station_id || null
+          const newUser = await this.createUserProfile(authUser.id, authUser.email || '', username, stationId)
+          return newUser
+        }
         return null
       }
 
       return this.enhanceUser(user)
     } catch (error) {
       console.error('Error getting current user:', error)
+      return null
+    }
+  }
+
+  static async createUserProfile(userId: string, email: string, username: string, stationId?: string): Promise<AuthUser | null> {
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email,
+          username,
+          role: 'station_user' as UserRole,
+          station_id: stationId,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error creating user profile:', error)
+        return null
+      }
+
+      return this.enhanceUser(user)
+    } catch (error) {
+      console.error('Error creating user profile:', error)
       return null
     }
   }
@@ -76,28 +110,20 @@ export class AuthService {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username: username,
+          station_id: stationId || null,
+        }
+      }
     })
     
     if (error) {
       throw error
     }
 
-    if (data.user) {
-      // Create user profile
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: data.user.id,
-          email,
-          username,
-          role: 'station_user' as UserRole,
-          station_id: stationId || null,
-        })
-
-      if (profileError) {
-        throw profileError
-      }
-    }
+    // Don't create user profile here - it will be created after email confirmation
+    // in the getCurrentUser method when user first logs in
     
     return data
   }
