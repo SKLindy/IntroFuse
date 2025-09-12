@@ -1,8 +1,8 @@
 import { Song, ContentSession } from '@/types/database'
 
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL_SONNET = 'claude-3-sonnet-20240229'
-const MODEL_OPUS = 'claude-3-opus-20240229'
+const MODEL_SONNET = 'claude-3-5-sonnet-20241022'
+const MODEL_OPUS = 'claude-3-5-sonnet-20241022'
 
 interface ClaudeMessage {
   role: 'user' | 'assistant'
