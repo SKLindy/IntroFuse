@@ -220,16 +220,32 @@ Respond in JSON format:
     ])
 
     try {
-      return JSON.parse(response)
+      const result = JSON.parse(response)
+      console.log('Script generation successful:', result)
+      return result
     } catch (error) {
       console.error('Failed to parse script generation JSON:', error)
-      // Fallback scripts if JSON parsing fails
+      console.error('Raw Claude response:', response)
+      
+      // If JSON fails, but we have a response, try to extract content manually
+      if (response && response.length > 50) {
+        return {
+          shortScript: `DEBUGGING: Content was provided but script generation failed. Raw response: ${response.substring(0, 100)}...`,
+          longScript: `DEBUGGING: This indicates a JSON parsing issue. Content: ${contentAnalysis?.summary || 'No summary'} | Song: ${songTitle}`,
+          performanceNotes: {
+            short: 'Debug mode - check logs',
+            long: 'Debug mode - JSON parsing failed'
+          }
+        }
+      }
+      
+      // Complete failure fallback
       return {
-        shortScript: `Here's "${songTitle}" by ${artist} - perfect for what's happening right now.`,
-        longScript: `You know what's interesting about "${songTitle}" by ${artist}? It really captures the mood of what we're all talking about these days. This one's for everyone who gets it.`,
+        shortScript: `ERROR: Script generation completely failed for "${songTitle}" by ${artist}`,
+        longScript: `ERROR: No connection could be made between the content about "${contentAnalysis?.summary || 'unknown topic'}" and this song.`,
         performanceNotes: {
-          short: 'Keep it punchy and confident',
-          long: 'Build anticipation and connect with the audience'
+          short: 'Error state',
+          long: 'Error state'
         }
       }
     }
