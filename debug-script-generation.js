@@ -169,12 +169,12 @@ Respond in JSON format:
 }
 
 async function testWithProduction() {
-  console.log('Testing with local development server...')
+  console.log('Testing with production deployment...')
   
   const testContent = "Scientists have discovered a new exoplanet that's remarkably similar to Earth, located just 22 light-years away. The planet, called TOI-715 b, orbits within the habitable zone of its red dwarf star and could potentially support liquid water on its surface."
   
   try {
-    const response = await fetch('http://localhost:3000/api/generate-scripts', {
+    const response = await fetch('https://introfuse.vercel.app/api/generate-scripts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ async function testWithProduction() {
     }
 
     const data = await response.json()
-    console.log('Local server response:', JSON.stringify(data, null, 2))
+    console.log('Production server response:', JSON.stringify(data, null, 2))
     
     // Check if the scripts actually reference the content
     const shortScript = data.shortScript || ''
