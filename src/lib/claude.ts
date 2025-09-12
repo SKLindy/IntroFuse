@@ -24,9 +24,19 @@ class ClaudeService {
     this.apiKey = process.env.CLAUDE_API_KEY || 'placeholder-key'
     this.model = MODEL_SONNET // Default to Sonnet
     
-    // Only validate API key on server side
-    if (typeof window === 'undefined' && process.env.NODE_ENV === 'production' && this.apiKey === 'placeholder-key') {
-      console.error('Missing CLAUDE_API_KEY in production environment')
+    // Debug API key loading
+    if (typeof window === 'undefined') {
+      console.log('Claude API Key Debug:', {
+        exists: !!this.apiKey,
+        length: this.apiKey?.length || 0,
+        firstChars: this.apiKey?.substring(0, 7) + '...' || 'none',
+        isPlaceholder: this.apiKey === 'placeholder-key' || this.apiKey?.includes('your_actual_'),
+        environment: process.env.NODE_ENV
+      })
+      
+      if (process.env.NODE_ENV === 'production' && (this.apiKey === 'placeholder-key' || this.apiKey?.includes('your_actual_'))) {
+        console.error('Missing or invalid CLAUDE_API_KEY in production environment')
+      }
     }
   }
 
