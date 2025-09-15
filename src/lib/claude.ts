@@ -157,26 +157,40 @@ Required JSON format:
   }
 
   async analyzeContent(contentSource: string, contentType: 'url' | 'upload' | 'manual'): Promise<ContentSession['content_analysis']> {
-    const prompt = `Analyze the following content and provide a comprehensive analysis for a radio DJ who wants to connect it with song introductions:
+    const prompt = `Analyze the following content and provide a comprehensive analysis for a radio DJ who wants to connect it with song introductions. The analysis MUST capture specific, newsworthy details that make this story identifiable and compelling to listeners.
 
 Content Type: ${contentType}
 Content: ${contentSource}
 
+CRITICAL REQUIREMENTS for analysis:
+1. Extract SPECIFIC FACTS: names, numbers, locations, dates, exact details
+2. Identify what makes this story NEWSWORTHY and unique
+3. Capture details that help listeners immediately understand what story is being referenced
+4. Include measurable/quantifiable information when available
+5. Preserve proper nouns, specific places, exact figures, and concrete details
+
 Provide an analysis that includes:
-1. A concise summary of the main points
-2. Key topics and themes
+1. A detailed summary with SPECIFIC facts (who, what, where, when, how much)
+2. Key newsworthy points with concrete details
 3. Emotional tone and style
 4. Relevance score for radio content (1-10)
-5. Potential connection points for music introductions
+5. Specific connection points for music introductions
 
-Focus on extracting information that would be useful for creating compelling song introductions that reference current events, trends, or interesting stories.
+EXAMPLES of good vs. bad specificity:
+❌ BAD: "A celebrity lost weight for a role"
+✅ GOOD: "Dwayne 'The Rock' Johnson dramatically slimmed down for his role in 'The Smashing Machine' at the Toronto Film Festival"
+
+❌ BAD: "A suburban area was ranked highly"  
+✅ GOOD: "Johns Creek, Georgia was ranked America's #1 best place to live by Architectural Digest, beating major metros"
+
+Focus on extracting specific information that would make listeners think "Oh, they're talking about THAT story!"
 
 CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown formatting, no extra text before or after the JSON.
 
 Required JSON format:
 {
-  "summary": "concise summary of the content",
-  "key_points": ["array", "of", "key", "points"],
+  "summary": "detailed summary with specific facts, names, numbers, locations",
+  "key_points": ["array", "of", "specific", "newsworthy", "details", "with", "concrete", "facts"],
   "tone": "emotional tone of the content",
   "topics": ["array", "of", "main", "topics"],
   "relevance_score": number_from_1_to_10
@@ -238,13 +252,22 @@ WRITING STYLE: ${stylePrompt}
 YOUR MISSION: Create scripts that make an ARTFUL, UNEXPECTED CONNECTION between the content and the song. This is NOT about just introducing a song - it's about creating a "wow, I never would have thought to connect those two things" moment. Find the clever thread, the surprising parallel, the deeper human truth that links them.
 
 CRITICAL REQUIREMENTS:
-1. MUST directly reference and incorporate the actual content provided - don't just make generic statements
-2. Find the unexpected connection - avoid obvious relationships
-3. Create intrigue and "aha!" moments for listeners
-4. SHORT SCRIPT (5-10 seconds, ~25-50 words): A sharp, clever connection
-5. LONG SCRIPT (15-20 seconds, ~75-100 words): Build the connection with more detail and sophistication
-6. Both scripts should feel like revelations, not just transitions
-7. Use broadcast-appropriate language throughout
+1. MUST include SPECIFIC DETAILS from the content - names, places, numbers, exact facts that make the story identifiable
+2. Listeners should immediately know which story you're referencing without having to guess
+3. Use concrete details that make the content vivid and memorable
+4. Find the unexpected connection - avoid obvious relationships
+5. Create intrigue and "aha!" moments for listeners
+6. SHORT SCRIPT (5-10 seconds, ~25-50 words): A sharp, clever connection with specific details
+7. LONG SCRIPT (15-20 seconds, ~75-100 words): Build the connection with more detail and sophistication
+8. Both scripts should feel like revelations, not just transitions
+9. Use broadcast-appropriate language throughout
+
+SPECIFICITY EXAMPLES:
+❌ AVOID: "Speaking of transformations..." 
+✅ USE: "Speaking of Dwayne Johnson's 40-pound weight loss for 'The Smashing Machine'..."
+
+❌ AVOID: "A place was ranked highly..."
+✅ USE: "Johns Creek, Georgia just beat out major cities to claim America's #1 spot..."
 
 EXAMPLES of the style we want:
 - Content about space exploration + Love song → "Speaking of exploring the unknown..."
