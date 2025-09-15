@@ -120,7 +120,9 @@ class ClaudeService {
 
 Format your response as a detailed but concise analysis that would help a radio DJ understand what makes this song special and how it might connect with current topics or audience interests.
 
-Respond in JSON format with the following structure:
+CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown formatting, no extra text before or after the JSON.
+
+Required JSON format:
 {
   "emotional_tone": "string describing the overall emotional feeling",
   "themes": ["array", "of", "key", "themes"],
@@ -169,7 +171,9 @@ Provide an analysis that includes:
 
 Focus on extracting information that would be useful for creating compelling song introductions that reference current events, trends, or interesting stories.
 
-Respond in JSON format with the following structure:
+CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown formatting, no extra text before or after the JSON.
+
+Required JSON format:
 {
   "summary": "concise summary of the content",
   "key_points": ["array", "of", "key", "points"],
@@ -247,7 +251,9 @@ EXAMPLES of the style we want:
 - Story about AI advancement + Classic rock song → "Just like this next song predicted decades ago..."
 - News about economic changes + Folk song → "Turns out some truths never change..."
 
-Respond in JSON format:
+CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown formatting, no extra text before or after the JSON.
+
+Required JSON format:
 {
   "shortScript": "5-10 second script with artful connection",
   "longScript": "15-20 second script with sophisticated connection",
@@ -290,6 +296,25 @@ Respond in JSON format:
       }
       if (jsonResponse.endsWith('```')) {
         jsonResponse = jsonResponse.substring(0, jsonResponse.length - 3).trim()
+      }
+      
+      // Try to extract JSON from response by finding the first { and last }
+      const firstBrace = jsonResponse.indexOf('{')
+      const lastBrace = jsonResponse.lastIndexOf('}')
+      
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        const possibleJson = jsonResponse.substring(firstBrace, lastBrace + 1)
+        console.log('Extracted possible JSON:', possibleJson.substring(0, 200) + '...')
+        
+        // Try parsing the extracted JSON first
+        try {
+          const result = JSON.parse(possibleJson)
+          console.log('Successfully parsed extracted JSON')
+          return result
+        } catch (extractError) {
+          console.log('Failed to parse extracted JSON, trying full response:', extractError)
+          // Fall through to try parsing the full response
+        }
       }
       
       const result = JSON.parse(jsonResponse)
