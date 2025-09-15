@@ -46,6 +46,22 @@ class ClaudeService {
     }
 
     try {
+      console.log('Making Claude API request with', {
+        model: this.model,
+        messageCount: messages.length,
+        firstMessageLength: messages[0]?.content?.length || 0
+      })
+
+      const requestBody = {
+        model: this.model,
+        max_tokens: 4000, // Increased from 2000 to handle longer responses
+        messages,
+        temperature: 0.7, // Add some creativity
+        timeout: 60000 // 60 second timeout
+      }
+
+      console.log('Request body:', JSON.stringify(requestBody, null, 2).substring(0, 500) + '...')
+
       const response = await fetch(CLAUDE_API_URL, {
         method: 'POST',
         headers: {
@@ -53,20 +69,41 @@ class ClaudeService {
           'x-api-key': this.apiKey,
           'anthropic-version': '2023-06-01',
         },
-        body: JSON.stringify({
-          model: this.model,
-          max_tokens: 2000,
-          messages,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('Claude API response status:', response.status, response.statusText)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(`Claude API error: ${errorData.error?.message || response.statusText}`)
+        const errorText = await response.text()
+        console.error('Claude API error response:', errorText)
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { message: errorText }
+        }
+        throw new Error(`Claude API error: ${errorData.error?.message || errorData.message || response.statusText}`)
       }
 
-      const data: ClaudeResponse = await response.json()
-      return data.content[0]?.text || ''
+      const responseText = await response.text()
+      console.log('Raw Claude response length:', responseText.length)
+      console.log('Raw Claude response preview:', responseText.substring(0, 200) + '...')
+
+      let data: ClaudeResponse
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('Failed to parse Claude response as JSON:', parseError)
+        console.error('Raw response that failed to parse:', responseText)
+        throw new Error(`Invalid JSON response from Claude API: ${parseError}`)
+      }
+
+      const content = data.content[0]?.text || ''
+      console.log('Extracted content length:', content.length)
+      
+      return content
     } catch (error: any) {
       console.error('Claude API request failed:', error)
       throw new Error(`Failed to communicate with Claude: ${error.message}`)
@@ -226,32 +263,63 @@ Respond in JSON format:
     ])
 
     try {
-      const result = JSON.parse(response)
+      console.log('Parsing Claude response for script generation...')
+      console.log('Response length:', response.length)
+      console.log('Response preview:', response.substring(0, 300) + '...')
+      
+      // Check if response looks like it was truncated
+      if (!response.includes('}') || response.endsWith('...')) {
+        console.error('Claude response appears to be truncated:', response)
+        throw new Error('Claude response was truncated or incomplete')
+      }
+      
+      // Try to find and extract valid JSON if response has extra text
+      let jsonResponse = response.trim()
+      
+      // If response has markdown formatting, try to extract JSON
+      if (jsonResponse.includes('```json')) {
+        const jsonStart = jsonResponse.indexOf('```json') + 7
+        const jsonEnd = jsonResponse.indexOf('```', jsonStart)
+        if (jsonEnd > jsonStart) {
+          jsonResponse = jsonResponse.substring(jsonStart, jsonEnd).trim()
+        }
+      }
+      
+      // If response starts with ```json, remove it
+      if (jsonResponse.startsWith('```json')) {
+        jsonResponse = jsonResponse.substring(7).trim()
+      }
+      if (jsonResponse.endsWith('```')) {
+        jsonResponse = jsonResponse.substring(0, jsonResponse.length - 3).trim()
+      }
+      
+      const result = JSON.parse(jsonResponse)
       console.log('Script generation successful:', result)
       return result
     } catch (error) {
       console.error('Failed to parse script generation JSON:', error)
-      console.error('Raw Claude response:', response)
+      console.error('Raw Claude response for debugging:', response)
+      console.error('Content analysis that was sent:', contentAnalysis)
+      console.error('Song analysis that was sent:', songAnalysis)
       
-      // If JSON fails, but we have a response, try to extract content manually
-      if (response && response.length > 50) {
-        return {
-          shortScript: `DEBUGGING: Content was provided but script generation failed. Raw response: ${response.substring(0, 100)}...`,
-          longScript: `DEBUGGING: This indicates a JSON parsing issue. Content: ${contentAnalysis?.summary || 'No summary'} | Song: ${songTitle}`,
-          performanceNotes: {
-            short: 'Debug mode - check logs',
-            long: 'Debug mode - JSON parsing failed'
-          }
-        }
+      // Create a more informative error message
+      const errorDetails = {
+        error: error instanceof Error ? error.message : 'Unknown parsing error',
+        responseLength: response?.length || 0,
+        responsePreview: response?.substring(0, 200) || 'No response',
+        contentSummary: contentAnalysis?.summary || 'No content analysis',
+        songTitle: songTitle,
+        artist: artist
       }
       
-      // Complete failure fallback
+      console.error('Detailed error info:', errorDetails)
+      
       return {
-        shortScript: `ERROR: Script generation completely failed for "${songTitle}" by ${artist}`,
-        longScript: `ERROR: No connection could be made between the content about "${contentAnalysis?.summary || 'unknown topic'}" and this song.`,
+        shortScript: `DEBUGGING: JSON parse failed. Error: ${errorDetails.error}. Response length: ${errorDetails.responseLength}`,
+        longScript: `DEBUGGING: Claude returned invalid JSON. This may be due to response truncation, rate limiting, or prompt issues. Content: ${errorDetails.contentSummary} | Song: ${errorDetails.songTitle}`,
         performanceNotes: {
-          short: 'Error state',
-          long: 'Error state'
+          short: 'Debug: Check server logs for detailed error info',
+          long: 'Debug: JSON parsing failed - see console for full details'
         }
       }
     }
