@@ -56,8 +56,7 @@ class ClaudeService {
         model: this.model,
         max_tokens: 4000, // Increased from 2000 to handle longer responses
         messages,
-        temperature: 0.7, // Add some creativity
-        timeout: 60000 // 60 second timeout
+        temperature: 0.7 // Add some creativity
       }
 
       console.log('Request body:', JSON.stringify(requestBody, null, 2).substring(0, 500) + '...')
