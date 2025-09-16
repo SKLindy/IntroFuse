@@ -11,6 +11,7 @@ export default function TestPage() {
   const [content, setContent] = useState('')
   const [artist, setArtist] = useState('')
   const [song, setSong] = useState('')
+  const [selectedStyle, setSelectedStyle] = useState('Conversational')
   const [scripts, setScripts] = useState<{ short: string; long: string } | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -32,7 +33,7 @@ export default function TestPage() {
           contentType: 'manual',
           artist,
           songTitle: song,
-          selectedStyle: 'Conversational',
+          selectedStyle: selectedStyle,
         }),
       })
 
@@ -88,6 +89,27 @@ export default function TestPage() {
                   value={song}
                   onChange={(e) => setSong(e.target.value)}
                 />
+              </div>
+              <div>
+                <Label>Writing Style</Label>
+                <div className="flex gap-2 mt-1">
+                  {['Conversational', 'Humorous', 'Thoughtful'].map((style) => (
+                    <Button
+                      key={style}
+                      variant={selectedStyle === style ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedStyle(style)}
+                      className="flex-1"
+                    >
+                      {style}
+                    </Button>
+                  ))}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {selectedStyle === 'Conversational' && 'Natural and approachable, like talking to a friend'}
+                  {selectedStyle === 'Humorous' && 'Witty and entertaining with clever observations'}
+                  {selectedStyle === 'Thoughtful' && 'Reflective and insightful, connecting deeper themes'}
+                </div>
               </div>
               <Button 
                 onClick={generateScripts} 
