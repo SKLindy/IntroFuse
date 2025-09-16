@@ -249,7 +249,9 @@ Musical Style: ${songAnalysis.genre || 'Timeless'} from ${songAnalysis.era || 't
 
 WRITING STYLE: ${stylePrompt}
 
-YOUR MISSION: Create scripts that make an ARTFUL, UNEXPECTED CONNECTION between the content and the song. This is NOT about just introducing a song - it's about creating a "wow, I never would have thought to connect those two things" moment. Find the clever thread, the surprising parallel, the deeper human truth that links them.
+YOUR MISSION: Create scripts that SEAMLESSLY BLEND content and song into one unified story. This is NOT about introducing a song or transitioning between topics - it's about discovering that the content and song were ALWAYS part of the same story. The listener should feel "wow, these two things are perfectly connected" rather than "here's a song that relates to that topic."
+
+Find the thread that makes content and song feel like two verses of the same narrative.
 
 CRITICAL REQUIREMENTS:
 1. MUST include SPECIFIC DETAILS from the content - names, places, numbers, exact facts that make the story identifiable
@@ -269,10 +271,20 @@ SPECIFICITY EXAMPLES:
 ❌ AVOID: "A place was ranked highly..."
 ✅ USE: "Johns Creek, Georgia just beat out major cities to claim America's #1 spot..."
 
-EXAMPLES of the style we want:
-- Content about space exploration + Love song → "Speaking of exploring the unknown..."
-- Story about AI advancement + Classic rock song → "Just like this next song predicted decades ago..."
-- News about economic changes + Folk song → "Turns out some truths never change..."
+TRANSITION REQUIREMENTS:
+❌ AVOID basic transitions like:
+- "Speaking of [content topic]..."
+- "And speaking of..."  
+- "Here's a song about..."
+- "Which brings us to..."
+- "That reminds me of..."
+
+✅ CREATE seamless blends where content and song become ONE story:
+- Content about space exploration + Love song → "Just like those astronomers reaching across 22 light-years to find Earth's twin, some connections transcend impossible distances..."
+- Story about AI advancement + Classic rock song → "While machines learn to think like humans, this song from '75 already knew what we'd become..."
+- News about economic changes + Folk song → "As Wall Street numbers shift, the truths in these lyrics hold steady..."
+
+The content and song should feel like they were ALWAYS meant to be together, not introduced to each other.
 
 CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown formatting, no extra text before or after the JSON.
 
