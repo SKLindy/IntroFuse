@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { ContentInput } from '@/components/dashboard/content-input'
+import { ContentType } from '@/types/database'
 
 export default function TestPage() {
-  const [content, setContent] = useState('')
+  const [contentSource, setContentSource] = useState('')
+  const [contentType, setContentType] = useState<ContentType | null>(null)
   const [artist, setArtist] = useState('')
   const [song, setSong] = useState('')
   const [selectedStyle, setSelectedStyle] = useState('Conversational')
@@ -16,8 +18,8 @@ export default function TestPage() {
   const [loading, setLoading] = useState(false)
 
   const generateScripts = async () => {
-    if (!content || !artist || !song) {
-      alert('Please fill in all fields')
+    if (!contentSource || !artist || !song || !contentType) {
+      alert('Please fill in all fields and select content')
       return
     }
 
@@ -29,8 +31,8 @@ export default function TestPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contentSource: content,
-          contentType: 'manual',
+          contentSource,
+          contentType,
           artist,
           songTitle: song,
           selectedStyle: selectedStyle,
@@ -67,12 +69,19 @@ export default function TestPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Content Source</Label>
-                <Textarea
-                  placeholder="Enter your content here... (e.g., news story, trending topic)"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={4}
+                <ContentInput
+                  contentSource={contentSource}
+                  contentType={contentType}
+                  onContentChange={(source, type) => {
+                    setContentSource(source)
+                    setContentType(type)
+                  }}
                 />
+                {contentType && (
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Content type: {contentType}
+                  </div>
+                )}
               </div>
               <div>
                 <Label>Artist</Label>
