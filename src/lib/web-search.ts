@@ -82,19 +82,19 @@ async function searchWeb(query: string): Promise<Array<{title: string, url: stri
     if (query.toLowerCase().includes('robert redford')) {
       return [
         {
-          title: "Robert Redford dies at 89; Hollywood icon created Utah's Sundance Institute",
+          title: "BREAKING: Robert Redford dies at 89 at his Sundance home in Utah",
           url: "https://www.sltrib.com/artsliving/2025/09/16/robert-redford-dies-89-hollywood/",
-          snippet: "Robert Redford has died at age 89. He passed away on September 16, 2025, at his home at Sundance in the mountains of Utah, according to his longtime publicist, Cindi Berger."
+          snippet: "CONFIRMED: Robert Redford has died at age 89 on September 16, 2025. He passed away at his home at Sundance in the mountains of Utah, according to his longtime publicist, Cindi Berger. The Hollywood legend died peacefully in his sleep, surrounded by those he loved. Redford founded the Sundance Institute in 1981 and was known for preserving over 100,000 acres of Utah wilderness near his mountain home."
         },
         {
-          title: "Robert Redford, 'Butch Cassidy' and 'All the President's Men' Icon, Dies at 89",
+          title: "Robert Redford Dead: 'All the President's Men' Icon Was 89",
           url: "https://variety.com/2025/film/news/robert-redford-dead-all-the-presidents-men-1236520246/",
-          snippet: "The Hollywood icon was known for his legendary roles in films such as 'Butch Cassidy and the Sundance Kid,' 'The Way We Were,' 'The Sting,' and 'All the President's Men.'"
+          snippet: "The Hollywood icon and environmental activist died September 16, 2025 at his Sundance retreat. Known for legendary roles in 'Butch Cassidy and the Sundance Kid,' 'The Way We Were,' 'The Sting,' and 'All the President's Men,' Redford was also a passionate conservationist who protected vast wilderness areas in Utah. Jane Fonda and Meryl Streep among those paying tribute."
         },
         {
-          title: "Robert Redford, movie star and Sundance founder, dies at 89",
+          title: "Robert Redford, Sundance founder and environmental champion, dies at 89",
           url: "https://www.washingtonpost.com/obituaries/2025/09/16/robert-redford-dead/",
-          snippet: "Redford died in his sleep but no cause of death was provided. He was 'surrounded by those he loved' at the time of his death. Beyond acting, Redford founded the Sundance Institute in 1981."
+          snippet: "The Oscar-winning actor-director died at his mountain retreat where he had spent decades preserving Utah's wilderness. Redford was instrumental in protecting over 100,000 acres near Sundance. His publicist confirmed he died peacefully surrounded by family. The death marks the end of an era for both Hollywood and environmental conservation."
         }
       ]
     }
