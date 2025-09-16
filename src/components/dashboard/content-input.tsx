@@ -105,21 +105,11 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
     toast.success('Manual content added successfully')
   }
 
-  const handleSearchSubmit = async () => {
-    if (!searchInput.trim()) {
-      toast.error('Please enter a search query')
-      return
-    }
-
-    setIsProcessingSearch(true)
-    try {
-      const summary = await performWebSearch(searchInput)
-      onContentChange(summary, 'search')
-      toast.success('Web search content retrieved successfully')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to perform web search')
-    } finally {
-      setIsProcessingSearch(false)
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value)
+    // Immediately set the search query as content when user types
+    if (value.trim()) {
+      onContentChange(value, 'search')
     }
   }
 
@@ -175,30 +165,21 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
       <TabsContent value="search" className="space-y-3">
         <div>
           <Label htmlFor="search-input">Search Keywords or Topic</Label>
-          <div className="flex gap-2 mt-1">
-            <Input
-              id="search-input"
-              type="text"
-              placeholder="e.g., robert redford, latest AI breakthrough, trending news"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              disabled={isProcessingSearch}
-            />
-            <Button 
-              onClick={handleSearchSubmit} 
-              disabled={isProcessingSearch || !searchInput.trim()}
-              size="sm"
-            >
-              {isProcessingSearch ? 'Searching...' : 'Search'}
-            </Button>
-          </div>
+          <Input
+            id="search-input"
+            type="text"
+            placeholder="e.g., robert redford, latest AI breakthrough, trending news"
+            value={searchInput}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
+            className="mt-1"
+          />
           <div className="text-xs text-muted-foreground mt-1">
-            Enter keywords or topics to find current, newsworthy content
+            Enter keywords or topics to search for current news
           </div>
         </div>
         {contentType === 'search' && contentSource && (
           <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-            ✓ Web search content analyzed and summarized
+            ✓ Search query ready: "{contentSource}"
           </div>
         )}
       </TabsContent>
