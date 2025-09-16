@@ -4,6 +4,7 @@ import { claudeService } from '@/lib/claude'
 import { AuthService } from '@/lib/auth'
 import { ContentType } from '@/types/database'
 import { extractUrlContent } from '@/lib/content-extractor'
+import { performWebSearch } from '@/lib/web-search'
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         .single()
     }
 
-    // Step 2: Extract content if URL
+    // Step 2: Process content based on type
     let actualContent = contentSource
     if (contentType === 'url') {
       console.log('Extracting content from URL:', contentSource)
@@ -75,6 +76,19 @@ export async function POST(request: NextRequest) {
         console.error('URL extraction failed:', error)
         return NextResponse.json(
           { error: `Failed to extract content from URL: ${error.message}` },
+          { status: 400 }
+        )
+      }
+    } else if (contentType === 'search') {
+      console.log('Performing web search for:', contentSource)
+      try {
+        actualContent = await performWebSearch(contentSource)
+        console.log('Web search completed, content length:', actualContent.length)
+        console.log('Search summary preview:', actualContent.substring(0, 300) + '...')
+      } catch (error: any) {
+        console.error('Web search failed:', error)
+        return NextResponse.json(
+          { error: `Failed to perform web search: ${error.message}` },
           { status: 400 }
         )
       }

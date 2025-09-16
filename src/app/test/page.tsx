@@ -3,14 +3,15 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { ContentInput } from '@/components/dashboard/content-input'
-import { ContentType } from '@/types/database'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Upload, Link, Type, Search } from 'lucide-react'
 
 export default function TestPage() {
   const [contentSource, setContentSource] = useState('')
-  const [contentType, setContentType] = useState<ContentType | null>(null)
+  const [contentType, setContentType] = useState<'url' | 'search' | 'upload' | 'manual'>('manual')
   const [artist, setArtist] = useState('')
   const [song, setSong] = useState('')
   const [selectedStyle, setSelectedStyle] = useState('Conversational')
@@ -18,8 +19,8 @@ export default function TestPage() {
   const [loading, setLoading] = useState(false)
 
   const generateScripts = async () => {
-    if (!contentSource || !artist || !song || !contentType) {
-      alert('Please fill in all fields and select content')
+    if (!contentSource || !artist || !song) {
+      alert('Please fill in all fields')
       return
     }
 
@@ -69,19 +70,80 @@ export default function TestPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Content Source</Label>
-                <ContentInput
-                  contentSource={contentSource}
-                  contentType={contentType}
-                  onContentChange={(source, type) => {
-                    setContentSource(source)
-                    setContentType(type)
-                  }}
-                />
-                {contentType && (
-                  <div className="text-xs text-muted-foreground mt-2">
-                    Content type: {contentType}
-                  </div>
-                )}
+                <Tabs value={contentType} onValueChange={(value) => setContentType(value as any)} className="w-full mt-2">
+                  <TabsList className="grid grid-cols-4 w-full">
+                    <TabsTrigger value="url" className="flex items-center gap-1">
+                      <Link className="w-4 h-4" />
+                      URL
+                    </TabsTrigger>
+                    <TabsTrigger value="search" className="flex items-center gap-1">
+                      <Search className="w-4 h-4" />
+                      Search
+                    </TabsTrigger>
+                    <TabsTrigger value="upload" className="flex items-center gap-1">
+                      <Upload className="w-4 h-4" />
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger value="manual" className="flex items-center gap-1">
+                      <Type className="w-4 h-4" />
+                      Manual
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="url" className="space-y-3">
+                    <Input
+                      placeholder="https://example.com/article"
+                      value={contentSource}
+                      onChange={(e) => setContentSource(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Enter a website URL to extract content from
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="search" className="space-y-3">
+                    <Input
+                      placeholder="e.g., robert redford, latest AI breakthrough, trending news"
+                      value={contentSource}
+                      onChange={(e) => setContentSource(e.target.value)}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Enter keywords or topics to search for current news
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="upload" className="space-y-3">
+                    <Input
+                      type="file"
+                      accept=".txt,.pdf,.html,.htm,.doc,.docx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          const reader = new FileReader()
+                          reader.onload = (event) => {
+                            setContentSource(event.target?.result as string)
+                          }
+                          reader.readAsText(file)
+                        }
+                      }}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Upload a document (TXT, PDF, HTML, DOC, DOCX)
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="manual" className="space-y-3">
+                    <Textarea
+                      placeholder="Enter your content here... (e.g., news story, trending topic)"
+                      value={contentSource}
+                      onChange={(e) => setContentSource(e.target.value)}
+                      rows={4}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Type or paste content directly
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
               <div>
                 <Label>Artist</Label>

@@ -43,7 +43,28 @@ Create a comprehensive summary that a radio DJ could use to create compelling so
 RESPOND WITH A CLEAR, FACTUAL SUMMARY (NOT JSON):
 Write in paragraph form, including all the specific details and newsworthy information you found.`
 
-    const summary = await claudeService.analyzeWebSearchResults(analysisPrompt)
+    // Use Claude to analyze and summarize the search results
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.CLAUDE_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: analysisPrompt }]
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(`Claude API error: ${errorData.error?.message || response.statusText}`)
+    }
+
+    const data = await response.json()
+    const summary = data.content[0]?.text || 'No summary available'
     
     console.log('Web search summary generated, length:', summary.length)
     return summary
