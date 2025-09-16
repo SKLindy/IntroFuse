@@ -1,6 +1,6 @@
 export type UserRole = 'station_user' | 'station_admin' | 'super_admin'
 
-export type ContentType = 'url' | 'upload' | 'manual'
+export type ContentType = 'url' | 'upload' | 'manual' | 'search'
 
 export type WritingStyle = 'Conversational' | 'Humorous' | 'Thoughtful' | 'Custom'
 

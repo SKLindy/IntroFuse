@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
-import { Upload, Link, Type } from 'lucide-react'
+import { Upload, Link, Type, Search } from 'lucide-react'
 import { ContentType } from '@/types/database'
 import { toast } from 'sonner'
+import { performWebSearch } from '@/lib/web-search'
 
 interface ContentInputProps {
   contentSource: string
@@ -19,7 +20,9 @@ interface ContentInputProps {
 export function ContentInput({ contentSource, contentType, onContentChange }: ContentInputProps) {
   const [urlInput, setUrlInput] = useState('')
   const [manualInput, setManualInput] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const [isProcessingUrl, setIsProcessingUrl] = useState(false)
+  const [isProcessingSearch, setIsProcessingSearch] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
 
   const handleUrlSubmit = async () => {
@@ -102,12 +105,34 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
     toast.success('Manual content added successfully')
   }
 
+  const handleSearchSubmit = async () => {
+    if (!searchInput.trim()) {
+      toast.error('Please enter a search query')
+      return
+    }
+
+    setIsProcessingSearch(true)
+    try {
+      const summary = await performWebSearch(searchInput)
+      onContentChange(summary, 'search')
+      toast.success('Web search content retrieved successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to perform web search')
+    } finally {
+      setIsProcessingSearch(false)
+    }
+  }
+
   return (
     <Tabs defaultValue="url" className="w-full">
-      <TabsList className="grid grid-cols-3 w-full">
+      <TabsList className="grid grid-cols-4 w-full">
         <TabsTrigger value="url" className="flex items-center gap-1">
           <Link className="w-4 h-4" />
           URL
+        </TabsTrigger>
+        <TabsTrigger value="search" className="flex items-center gap-1">
+          <Search className="w-4 h-4" />
+          Search
         </TabsTrigger>
         <TabsTrigger value="upload" className="flex items-center gap-1">
           <Upload className="w-4 h-4" />
@@ -143,6 +168,37 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
         {contentType === 'url' && contentSource && (
           <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
             ✓ Content extracted from URL
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="search" className="space-y-3">
+        <div>
+          <Label htmlFor="search-input">Search Keywords or Topic</Label>
+          <div className="flex gap-2 mt-1">
+            <Input
+              id="search-input"
+              type="text"
+              placeholder="e.g., robert redford, latest AI breakthrough, trending news"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              disabled={isProcessingSearch}
+            />
+            <Button 
+              onClick={handleSearchSubmit} 
+              disabled={isProcessingSearch || !searchInput.trim()}
+              size="sm"
+            >
+              {isProcessingSearch ? 'Searching...' : 'Search'}
+            </Button>
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            Enter keywords or topics to find current, newsworthy content
+          </div>
+        </div>
+        {contentType === 'search' && contentSource && (
+          <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+            ✓ Web search content analyzed and summarized
           </div>
         )}
       </TabsContent>
