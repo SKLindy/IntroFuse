@@ -7,6 +7,9 @@ export async function GET(request: NextRequest) {
   
   return NextResponse.json({
     environment: process.env.NODE_ENV,
+    version: "enhanced-specificity-v2",
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID || 'local',
+    region: process.env.VERCEL_REGION || 'unknown',
     claudeApiKey: {
       exists: !!claudeKey,
       length: claudeKey.length,
