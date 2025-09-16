@@ -13,8 +13,11 @@ export class AuthService {
       const { data: { user: authUser }, error } = await supabase.auth.getUser()
       
       if (error || !authUser) {
+        console.log('No authenticated user found')
         return null
       }
+
+      console.log('Authenticated user found:', authUser.email, 'confirmed:', !!authUser.email_confirmed_at)
 
       const { data: user, error: userError } = await supabase
         .from('users')
@@ -23,17 +26,22 @@ export class AuthService {
         .single()
 
       if (userError || !user) {
+        console.log('User profile not found in database, userError:', userError?.message)
         // If user doesn't exist in our users table but is authenticated,
         // create the profile (this handles email confirmation flow)
         if (authUser.email_confirmed_at) {
+          console.log('Creating user profile for confirmed user')
           const username = authUser.user_metadata?.username || `user_${authUser.id.slice(0, 8)}`
           const stationId = authUser.user_metadata?.station_id || null
           const newUser = await this.createUserProfile(authUser.id, authUser.email || '', username, stationId)
           return newUser
+        } else {
+          console.log('User email not confirmed yet')
         }
         return null
       }
 
+      console.log('User profile found:', user.email)
       return this.enhanceUser(user)
     } catch (error) {
       console.error('Error getting current user:', error)
@@ -94,15 +102,19 @@ export class AuthService {
   }
 
   static async signIn(email: string, password: string) {
+    console.log('Attempting sign in for email:', email)
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     
     if (error) {
+      console.error('Supabase auth error:', error)
       throw error
     }
     
+    console.log('Sign in successful, user:', data.user?.email)
     return data
   }
 
