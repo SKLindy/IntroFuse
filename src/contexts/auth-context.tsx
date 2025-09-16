@@ -28,6 +28,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check for bypass parameter first
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('bypass') === 'true') {
+      console.log('Auth bypass enabled')
+      // Create a mock user for bypass mode
+      const mockUser = {
+        id: 'bypass-user',
+        email: 'bypass@test.com',
+        username: 'Bypass User',
+        role: 'station_user' as const,
+        station_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        hasRole: () => true,
+        canAccessStation: () => true
+      }
+      setUser(mockUser)
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {

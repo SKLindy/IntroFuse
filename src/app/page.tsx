@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react'
 export default function Home() {
   const { user, loading } = useAuth()
   const [timeoutReached, setTimeoutReached] = useState(false)
-  const [bypassAuth, setBypassAuth] = useState(false)
 
   // Add timeout to prevent infinite loading
   useEffect(() => {
@@ -18,14 +17,6 @@ export default function Home() {
     }, 10000) // 10 second timeout
 
     return () => clearTimeout(timeout)
-  }, [])
-
-  // Check for bypass parameter in URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('bypass') === 'true') {
-      setBypassAuth(true)
-    }
   }, [])
 
   if (loading && !timeoutReached) {
@@ -42,11 +33,6 @@ export default function Home() {
   // If loading timed out, show auth page
   if (timeoutReached && loading) {
     return <AuthPage />
-  }
-
-  // Allow bypass for testing
-  if (bypassAuth) {
-    return <DashboardLayout />
   }
 
   if (!user) {
