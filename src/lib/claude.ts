@@ -223,13 +223,12 @@ Required JSON format:
     style: string
   ): Promise<{ shortScript: string; longScript: string; performanceNotes: { short: string; long: string } }> {
     const stylePrompts = {
-      Humorous: "Create witty, entertaining scripts with clever observations and light humor. Keep it fun and engaging.",
-      Casual: "Write conversational scripts that feel like talking to a friend. Use everyday language and relatable references.",
-      Thoughtful: "Develop reflective scripts that connect deeper themes and meanings. Be insightful and contemplative.",
-      Storytelling: "Craft narrative-driven scripts with engaging anecdotes and compelling story elements."
+      Conversational: "Write conversational scripts that feel like talking to a friend. Use everyday language and relatable references. Be natural and approachable.",
+      Humorous: "Create witty, entertaining scripts with clever observations and light humor. Find the amusing angle or ironic twist. Keep it fun and engaging while being respectful.",
+      Thoughtful: "Develop reflective scripts that connect deeper themes and meanings. Be insightful and contemplative. Explore the human condition and universal truths."
     }
 
-    const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.Casual
+    const stylePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.Conversational
 
     const prompt = `You are a master radio DJ known for creating brilliant, unexpected connections between current events and music. Your specialty is finding the artful thread that ties seemingly unrelated content to songs in clever, entertaining ways that surprise and delight listeners.
 

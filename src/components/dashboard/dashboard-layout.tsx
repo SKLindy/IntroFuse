@@ -27,7 +27,7 @@ export function DashboardLayout() {
     contentType: null,
     artist: '',
     songTitle: '',
-    selectedStyle: 'Humorous',
+    selectedStyle: 'Conversational',
     scripts: null
   })
 

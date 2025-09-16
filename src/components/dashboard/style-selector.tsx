@@ -6,13 +6,12 @@ import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { WritingStyle } from '@/types/database'
 
-const PRESET_STYLES: WritingStyle[] = ['Humorous', 'Casual', 'Thoughtful', 'Storytelling']
+const PRESET_STYLES: WritingStyle[] = ['Conversational', 'Humorous', 'Thoughtful']
 
 const STYLE_DESCRIPTIONS = {
-  Humorous: 'Light-hearted and entertaining with wit and clever observations',
-  Casual: 'Conversational and relatable, like talking to a friend',
-  Thoughtful: 'Reflective and meaningful, connecting deeper themes',
-  Storytelling: 'Narrative-driven with engaging anecdotes and context'
+  Conversational: 'Natural and approachable, like talking to a friend',
+  Humorous: 'Witty and entertaining with clever observations and light humor',
+  Thoughtful: 'Reflective and insightful, connecting deeper themes and meanings'
 }
 
 interface StyleSelectorProps {
@@ -26,7 +25,7 @@ export function StyleSelector({ selectedStyle, onStyleChange }: StyleSelectorPro
   return (
     <div className="space-y-4">
       {/* Preset Styles */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {PRESET_STYLES.map((style) => (
           <Button
             key={style}

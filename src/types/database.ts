@@ -2,7 +2,7 @@ export type UserRole = 'station_user' | 'station_admin' | 'super_admin'
 
 export type ContentType = 'url' | 'upload' | 'manual'
 
-export type WritingStyle = 'Humorous' | 'Casual' | 'Thoughtful' | 'Storytelling' | 'Custom'
+export type WritingStyle = 'Conversational' | 'Humorous' | 'Thoughtful' | 'Custom'
 
 export interface Station {
   id: string

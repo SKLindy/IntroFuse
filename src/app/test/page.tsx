@@ -32,7 +32,7 @@ export default function TestPage() {
           contentType: 'manual',
           artist,
           songTitle: song,
-          selectedStyle: 'Casual',
+          selectedStyle: 'Conversational',
         }),
       })
 
