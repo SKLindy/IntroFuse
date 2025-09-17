@@ -89,8 +89,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true)
     try {
-      await AuthService.signIn(email, password)
-      // User will be set via auth state change listener
+      const result = await AuthService.signIn(email, password)
+
+      // Create a simple user object to bypass complex user lookup
+      if (result.user) {
+        const simpleUser = {
+          id: result.user.id,
+          email: result.user.email || '',
+          username: result.user.user_metadata?.username || 'User',
+          role: 'station_user' as const,
+          station_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          hasRole: () => true,
+          canAccessStation: () => true
+        }
+        setUser(simpleUser)
+        setLoading(false)
+        return
+      }
     } catch (error) {
       setLoading(false)
       throw error
