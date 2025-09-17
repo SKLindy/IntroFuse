@@ -11,7 +11,7 @@ export class AuthService {
   static async getCurrentUser(): Promise<AuthUser | null> {
     try {
       const { data: { user: authUser }, error } = await supabase.auth.getUser()
-      
+
       if (error || !authUser) {
         console.log('No authenticated user found')
         return null
@@ -19,22 +19,41 @@ export class AuthService {
 
       console.log('Authenticated user found:', authUser.email, 'confirmed:', !!authUser.email_confirmed_at)
 
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
+      // Try to get user from database with enhanced error handling
+      let user = null
+      let userError = null
+
+      try {
+        const { data: userData, error: dbError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
+
+        user = userData
+        userError = dbError
+      } catch (dbQueryError) {
+        console.error('Database query failed:', dbQueryError)
+        userError = dbQueryError
+      }
 
       if (userError || !user) {
         console.log('User profile not found in database, userError:', userError?.message)
-        // If user doesn't exist in our users table but is authenticated,
-        // create the profile (this handles email confirmation flow)
+        console.log('User ID from auth:', authUser.id)
+
+        // Create a temporary user object to allow login to proceed
         if (authUser.email_confirmed_at) {
-          console.log('Creating user profile for confirmed user')
-          const username = authUser.user_metadata?.username || `user_${authUser.id.slice(0, 8)}`
-          const stationId = authUser.user_metadata?.station_id || null
-          const newUser = await this.createUserProfile(authUser.id, authUser.email || '', username, stationId)
-          return newUser
+          console.log('Creating temporary user profile to allow login')
+          const tempUser = {
+            id: authUser.id,
+            email: authUser.email || '',
+            username: authUser.user_metadata?.username || 'User',
+            role: 'station_user' as const,
+            station_id: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+          return this.enhanceUser(tempUser)
         } else {
           console.log('User email not confirmed yet')
         }
