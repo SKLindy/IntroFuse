@@ -30,6 +30,7 @@ export function DashboardLayout() {
     selectedStyle: 'Conversational',
     scripts: null
   })
+  const [loading, setLoading] = useState(false)
 
   const updateState = (updates: Partial<DashboardState>) => {
     setState(prev => ({ ...prev, ...updates }))
@@ -37,78 +38,149 @@ export function DashboardLayout() {
 
   const canGenerate = state.contentSource && state.artist && state.songTitle && state.selectedStyle
 
+  const generateScripts = async () => {
+    if (!canGenerate) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/generate-scripts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contentSource: state.contentSource,
+          contentType: state.contentType,
+          artist: state.artist,
+          songTitle: state.songTitle,
+          selectedStyle: state.selectedStyle,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate scripts')
+      }
+
+      const data = await response.json()
+      updateState({
+        scripts: {
+          short: data.shortScript,
+          long: data.longScript,
+        }
+      })
+    } catch (error: any) {
+      console.error('Error generating scripts:', error)
+      // You might want to add a toast notification here
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          {/* 16:9 aspect ratio layout */}
-          <div className="aspect-video bg-background rounded-lg shadow-lg border p-6">
-            <div className="h-full flex flex-col">
-              {/* Above the fold content */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Import Content Section */}
-                <div className="border rounded-lg p-4">
-                  <h2 className="text-lg font-semibold mb-4 text-primary">Import Content</h2>
-                  <ContentInput
-                    contentSource={state.contentSource}
-                    contentType={state.contentType}
-                    onContentChange={(source, type) => updateState({ contentSource: source, contentType: type })}
-                  />
-                </div>
+    <div className="min-h-screen p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8 text-center">IntroFuse</h1>
 
-                {/* Song Details Section */}
-                <div className="border rounded-lg p-4">
-                  <h2 className="text-lg font-semibold mb-4 text-primary">Song Details</h2>
-                  <SongDetails
-                    artist={state.artist}
-                    songTitle={state.songTitle}
-                    onArtistChange={(artist) => updateState({ artist })}
-                    onSongTitleChange={(songTitle) => updateState({ songTitle })}
-                  />
-                </div>
-
-                {/* Select Style Section */}
-                <div className="border rounded-lg p-4">
-                  <h2 className="text-lg font-semibold mb-4 text-primary">Select Style</h2>
-                  <StyleSelector
-                    selectedStyle={state.selectedStyle}
-                    onStyleChange={(selectedStyle) => updateState({ selectedStyle })}
-                  />
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Left Column - Input */}
+          <div className="bg-background rounded-lg shadow-lg border">
+            <div className="p-6 space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Content & Song Details</h2>
               </div>
 
-              {/* Generate Scripts Button */}
-              <div className="flex justify-center mb-6">
-                <ScriptGenerator
-                  disabled={!canGenerate}
-                  onGenerate={async (scripts) => updateState({ scripts })}
+              {/* Content Input */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Content Source</h3>
+                <ContentInput
                   contentSource={state.contentSource}
                   contentType={state.contentType}
-                  artist={state.artist}
-                  songTitle={state.songTitle}
-                  selectedStyle={state.selectedStyle}
+                  onContentChange={(source, type) => updateState({ contentSource: source, contentType: type })}
                 />
               </div>
 
-              {/* Script Output */}
-              {state.scripts && (
-                <div className="flex-1 overflow-y-auto">
-                  <ScriptOutput
-                    shortScript={state.scripts.short}
-                    longScript={state.scripts.long}
-                    onRegenerate={() => {
-                      // Trigger regeneration
-                      updateState({ scripts: null })
-                    }}
-                  />
+              {/* Song Details */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Song Details</h3>
+                <SongDetails
+                  artist={state.artist}
+                  songTitle={state.songTitle}
+                  onArtistChange={(artist) => updateState({ artist })}
+                  onSongTitleChange={(songTitle) => updateState({ songTitle })}
+                />
+              </div>
+
+              {/* Style Selector */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Writing Style</h3>
+                <StyleSelector
+                  selectedStyle={state.selectedStyle}
+                  onStyleChange={(selectedStyle) => updateState({ selectedStyle })}
+                />
+              </div>
+
+              {/* Generate Button */}
+              <button
+                onClick={generateScripts}
+                disabled={!canGenerate || loading}
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium py-3 px-4 rounded-md transition-colors text-lg"
+              >
+                {loading ? 'Generating Scripts...' : 'Generate Scripts'}
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column - Output */}
+          <div className="bg-background rounded-lg shadow-lg border">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Generated Scripts</h2>
+
+              {state.scripts ? (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">5-10 Second Script:</h3>
+                    <div className="bg-muted p-4 rounded-md text-sm font-mono">
+                      {state.scripts.short}
+                    </div>
+                    <button
+                      className="mt-2 text-sm px-3 py-1 border rounded hover:bg-muted transition-colors"
+                      onClick={() => navigator.clipboard.writeText(state.scripts!.short)}
+                    >
+                      Copy Short Script
+                    </button>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <strong>Performance Notes:</strong> Keep it punchy and engaging. Perfect for quick transitions.
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">15-20 Second Script:</h3>
+                    <div className="bg-muted p-4 rounded-md text-sm font-mono">
+                      {state.scripts.long}
+                    </div>
+                    <button
+                      className="mt-2 text-sm px-3 py-1 border rounded hover:bg-muted transition-colors"
+                      onClick={() => navigator.clipboard.writeText(state.scripts!.long)}
+                    >
+                      Copy Long Script
+                    </button>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <strong>Performance Notes:</strong> Build momentum and create anticipation. Great for setting the mood.
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  <p>Scripts will appear here after generation.</p>
+                  <p className="text-xs mt-2">Try with sample content like news stories or trending topics</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

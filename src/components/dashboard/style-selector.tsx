@@ -20,59 +20,27 @@ interface StyleSelectorProps {
 }
 
 export function StyleSelector({ selectedStyle, onStyleChange }: StyleSelectorProps) {
-  const [showCustomStyles, setShowCustomStyles] = useState(false)
-
   return (
-    <div className="space-y-4">
-      {/* Preset Styles */}
-      <div className="grid grid-cols-1 gap-2">
+    <div className="space-y-3">
+      {/* Preset Styles - Inline Layout */}
+      <div className="flex gap-2">
         {PRESET_STYLES.map((style) => (
           <Button
             key={style}
             variant={selectedStyle === style ? 'default' : 'outline'}
             size="sm"
             onClick={() => onStyleChange(style)}
-            className="justify-start h-auto p-3"
+            className="flex-1"
           >
-            <div className="text-left">
-              <div className="font-medium text-sm">{style}</div>
-              <div className="text-xs text-muted-foreground mt-1 leading-tight">
-                {STYLE_DESCRIPTIONS[style]}
-              </div>
-            </div>
+            {style}
           </Button>
         ))}
       </div>
 
-      {/* Custom Styles Toggle */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowCustomStyles(!showCustomStyles)}
-        className="w-full justify-between"
-      >
-        Custom Styles
-        {showCustomStyles ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-      </Button>
-
-      {/* Custom Styles Section */}
-      {showCustomStyles && (
-        <div className="space-y-2 p-3 border rounded-md bg-muted/50">
-          <div className="text-sm text-muted-foreground text-center">
-            No custom styles created yet.
-          </div>
-          <Button size="sm" variant="outline" className="w-full">
-            Create Custom Style
-          </Button>
-        </div>
-      )}
-
-      {/* Selected Style Display */}
-      {selectedStyle && (
-        <div className="text-center">
-          <Badge variant="secondary" className="px-3 py-1">
-            Selected: {selectedStyle}
-          </Badge>
+      {/* Style Description */}
+      {selectedStyle && STYLE_DESCRIPTIONS[selectedStyle as WritingStyle] && (
+        <div className="text-xs text-muted-foreground text-center">
+          {STYLE_DESCRIPTIONS[selectedStyle as WritingStyle]}
         </div>
       )}
     </div>
