@@ -1,43 +1,27 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
-import { AuthPage } from '@/components/auth/auth-page'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
-import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 export default function Home() {
-  const { user, loading } = useAuth()
-  const [timeoutReached, setTimeoutReached] = useState(false)
-
-  // Add timeout to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setTimeoutReached(true)
-    }, 10000) // 10 second timeout
-
-    return () => clearTimeout(timeout)
-  }, [])
-
-  if (loading && !timeoutReached) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading IntroFuse...</p>
+  return (
+    <>
+      <SignedOut>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">Welcome to IntroFuse</h1>
+            <p className="text-xl text-muted-foreground mb-8">AI-Powered Radio Script Generator</p>
+            <SignInButton mode="modal">
+              <button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-6 rounded-md text-lg">
+                Sign In to Get Started
+              </button>
+            </SignInButton>
+          </div>
         </div>
-      </div>
-    )
-  }
-
-  // If loading timed out, show auth page
-  if (timeoutReached && loading) {
-    return <AuthPage />
-  }
-
-  if (!user) {
-    return <AuthPage />
-  }
-
-  return <DashboardLayout />
+      </SignedOut>
+      <SignedIn>
+        <DashboardLayout />
+      </SignedIn>
+    </>
+  )
 }
