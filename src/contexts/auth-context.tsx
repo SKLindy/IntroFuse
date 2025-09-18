@@ -89,14 +89,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true)
     try {
-      const result = await AuthService.signIn(email, password)
+      console.log('Starting sign in process...')
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      // Create a simple user object to bypass complex user lookup
-      if (result.user) {
+      if (error) {
+        console.error('Supabase auth error:', error)
+        setLoading(false)
+        throw error
+      }
+
+      if (data.user) {
+        console.log('Auth successful, creating user object...')
         const simpleUser = {
-          id: result.user.id,
-          email: result.user.email || '',
-          username: result.user.user_metadata?.username || 'User',
+          id: data.user.id,
+          email: data.user.email || '',
+          username: data.user.user_metadata?.username || 'User',
           role: 'station_user' as const,
           station_id: null,
           created_at: new Date().toISOString(),
@@ -104,11 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           hasRole: () => true,
           canAccessStation: () => true
         }
+        console.log('Setting user and completing login...')
         setUser(simpleUser)
         setLoading(false)
         return
       }
     } catch (error) {
+      console.error('Login error:', error)
       setLoading(false)
       throw error
     }
