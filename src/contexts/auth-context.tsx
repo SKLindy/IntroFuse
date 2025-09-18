@@ -89,20 +89,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true)
     try {
-      console.log('Starting sign in process...')
+      alert('Step 1: Starting sign in process...')
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
-        console.error('Supabase auth error:', error)
+        alert('Error: ' + error.message)
         setLoading(false)
         throw error
       }
 
       if (data.user) {
-        console.log('Auth successful, creating user object...')
+        alert('Step 2: Auth successful, creating user object...')
         const simpleUser = {
           id: data.user.id,
           email: data.user.email || '',
@@ -114,13 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           hasRole: () => true,
           canAccessStation: () => true
         }
-        console.log('Setting user and completing login...')
+        alert('Step 3: Setting user and completing login...')
         setUser(simpleUser)
         setLoading(false)
+        alert('Step 4: Login complete!')
         return
       }
-    } catch (error) {
-      console.error('Login error:', error)
+    } catch (error: any) {
+      alert('Login error: ' + error.message)
       setLoading(false)
       throw error
     }
