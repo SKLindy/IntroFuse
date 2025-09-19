@@ -33,9 +33,27 @@ export function DashboardLayout() {
     scripts: null
   })
   const [loading, setLoading] = useState(false)
+  const [copiedShort, setCopiedShort] = useState(false)
+  const [copiedLong, setCopiedLong] = useState(false)
 
   const updateState = (updates: Partial<DashboardState>) => {
     setState(prev => ({ ...prev, ...updates }))
+  }
+
+  const copyShortScript = async () => {
+    if (state.scripts?.short) {
+      await navigator.clipboard.writeText(state.scripts.short)
+      setCopiedShort(true)
+      setTimeout(() => setCopiedShort(false), 2000) // Reset after 2 seconds
+    }
+  }
+
+  const copyLongScript = async () => {
+    if (state.scripts?.long) {
+      await navigator.clipboard.writeText(state.scripts.long)
+      setCopiedLong(true)
+      setTimeout(() => setCopiedLong(false), 2000) // Reset after 2 seconds
+    }
   }
 
   const canGenerate = state.contentSource && state.artist && state.songTitle && state.selectedStyle
@@ -156,14 +174,15 @@ export function DashboardLayout() {
                       {state.scripts.short}
                     </div>
                     <button
-                      className="mt-2 text-sm px-3 py-1 border rounded hover:bg-muted transition-colors"
-                      onClick={() => navigator.clipboard.writeText(state.scripts!.short)}
+                      className={`mt-2 text-sm px-3 py-1 border rounded transition-all duration-200 ${
+                        copiedShort
+                          ? 'bg-green-500 text-white border-green-500'
+                          : 'hover:bg-muted'
+                      }`}
+                      onClick={copyShortScript}
                     >
-                      Copy Short Script
+                      {copiedShort ? '✓ Copied!' : 'Copy Short Script'}
                     </button>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <strong>Performance Notes:</strong> Keep it punchy and engaging. Perfect for quick transitions.
-                    </div>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold mb-2">15-20 Second Script:</h3>
@@ -171,14 +190,15 @@ export function DashboardLayout() {
                       {state.scripts.long}
                     </div>
                     <button
-                      className="mt-2 text-sm px-3 py-1 border rounded hover:bg-muted transition-colors"
-                      onClick={() => navigator.clipboard.writeText(state.scripts!.long)}
+                      className={`mt-2 text-sm px-3 py-1 border rounded transition-all duration-200 ${
+                        copiedLong
+                          ? 'bg-green-500 text-white border-green-500'
+                          : 'hover:bg-muted'
+                      }`}
+                      onClick={copyLongScript}
                     >
-                      Copy Long Script
+                      {copiedLong ? '✓ Copied!' : 'Copy Long Script'}
                     </button>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <strong>Performance Notes:</strong> Build momentum and create anticipation. Great for setting the mood.
-                    </div>
                   </div>
                 </div>
               ) : (
