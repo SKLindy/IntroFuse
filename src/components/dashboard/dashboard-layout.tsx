@@ -8,6 +8,8 @@ import { ScriptGenerator } from './script-generator'
 import { ScriptOutput } from './script-output'
 import { useState } from 'react'
 import { ContentType } from '@/types/database'
+import { SignOutButton } from '@clerk/nextjs'
+import { LogOut } from 'lucide-react'
 
 interface DashboardState {
   contentSource: string
@@ -82,7 +84,15 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">IntroFuse</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">IntroFuse</h1>
+          <SignOutButton>
+            <button className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md hover:bg-muted transition-colors">
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </SignOutButton>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Left Column - Input */}

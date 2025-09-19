@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -9,7 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Upload, Link, Type, Search } from 'lucide-react'
 import { ContentType } from '@/types/database'
 import { toast } from 'sonner'
-import { performWebSearch } from '@/lib/web-search'
 
 interface ContentInputProps {
   contentSource: string
@@ -21,47 +19,7 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
   const [urlInput, setUrlInput] = useState('')
   const [manualInput, setManualInput] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [isProcessingUrl, setIsProcessingUrl] = useState(false)
-  const [isProcessingSearch, setIsProcessingSearch] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-
-  const handleUrlSubmit = async () => {
-    if (!urlInput.trim()) {
-      toast.error('Please enter a URL')
-      return
-    }
-
-    try {
-      new URL(urlInput)
-    } catch {
-      toast.error('Please enter a valid URL')
-      return
-    }
-
-    setIsProcessingUrl(true)
-    try {
-      const response = await fetch('/api/extract-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: urlInput }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to extract URL content')
-      }
-
-      const data = await response.json()
-      onContentChange(data.content, 'url')
-      toast.success('URL content extracted successfully')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to process URL content')
-    } finally {
-      setIsProcessingUrl(false)
-    }
-  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -95,19 +53,9 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
     reader.readAsText(file)
   }
 
-  const handleManualSubmit = () => {
-    if (!manualInput.trim()) {
-      toast.error('Please enter some content')
-      return
-    }
-
-    onContentChange(manualInput, 'manual')
-    toast.success('Manual content added successfully')
-  }
 
   const handleSearchInputChange = (value: string) => {
     setSearchInput(value)
-    // Immediately set the search query as content when user types
     if (value.trim()) {
       onContentChange(value, 'search')
     }
@@ -137,27 +85,24 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
       <TabsContent value="url" className="space-y-3">
         <div>
           <Label htmlFor="url-input">Website URL</Label>
-          <div className="flex gap-2 mt-1">
-            <Input
-              id="url-input"
-              type="url"
-              placeholder="https://example.com/article"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              disabled={isProcessingUrl}
-            />
-            <Button 
-              onClick={handleUrlSubmit} 
-              disabled={isProcessingUrl || !urlInput.trim()}
-              size="sm"
-            >
-              {isProcessingUrl ? 'Processing...' : 'Extract'}
-            </Button>
+          <Input
+            id="url-input"
+            type="url"
+            placeholder="https://example.com/article"
+            value={urlInput}
+            onChange={(e) => {
+              setUrlInput(e.target.value)
+              onContentChange(e.target.value, 'url')
+            }}
+            className="mt-1"
+          />
+          <div className="text-xs text-muted-foreground mt-1">
+            Enter a website URL for script generation
           </div>
         </div>
         {contentType === 'url' && contentSource && (
           <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-            ✓ Content extracted from URL
+            ✓ URL ready: "{contentSource}"
           </div>
         )}
       </TabsContent>
@@ -212,22 +157,20 @@ export function ContentInput({ contentSource, contentType, onContentChange }: Co
             id="manual-input"
             placeholder="Paste or type your content here..."
             value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
+            onChange={(e) => {
+              setManualInput(e.target.value)
+              onContentChange(e.target.value, 'manual')
+            }}
             rows={4}
             className="mt-1"
           />
+          <div className="text-xs text-muted-foreground mt-1">
+            Type or paste content directly
+          </div>
         </div>
-        <Button 
-          onClick={handleManualSubmit}
-          disabled={!manualInput.trim()}
-          size="sm"
-          className="w-full"
-        >
-          Use This Content
-        </Button>
         {contentType === 'manual' && contentSource && (
           <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-            ✓ Manual content added
+            ✓ Manual content ready
           </div>
         )}
       </TabsContent>
