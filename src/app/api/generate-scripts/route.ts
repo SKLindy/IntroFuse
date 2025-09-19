@@ -4,7 +4,6 @@ import { claudeService } from '@/lib/claude'
 import { AuthService } from '@/lib/auth'
 import { ContentType } from '@/types/database'
 import { extractUrlContent } from '@/lib/content-extractor'
-import { performWebSearch } from '@/lib/web-search'
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,7 +81,36 @@ export async function POST(request: NextRequest) {
     } else if (contentType === 'search') {
       console.log('Performing web search for:', contentSource)
       try {
-        actualContent = await performWebSearch(contentSource)
+        // Call the web-search API endpoint
+        const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/web-search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query: contentSource })
+        })
+
+        if (!searchResponse.ok) {
+          throw new Error(`Web search API failed: ${searchResponse.status}`)
+        }
+
+        const searchData = await searchResponse.json()
+
+        if (!searchData.results || searchData.results.length === 0) {
+          throw new Error('No search results found')
+        }
+
+        // Convert search results to content summary
+        actualContent = `BREAKING NEWS SEARCH RESULTS FOR: "${contentSource}"
+
+${searchData.results.map((result: any, index: number) => `
+${index + 1}. ${result.title}
+Source: ${result.url}
+Details: ${result.snippet}
+`).join('\n')}
+
+This information represents current breaking news developments that should be used for generating topical radio content.`
+
         console.log('Web search completed, content length:', actualContent.length)
         console.log('Search summary preview:', actualContent.substring(0, 300) + '...')
       } catch (error: any) {
