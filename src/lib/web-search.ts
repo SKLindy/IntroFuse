@@ -79,52 +79,48 @@ Write in paragraph form, including all the specific details and newsworthy infor
 
 async function searchWeb(query: string): Promise<Array<{title: string, url: string, snippet: string}>> {
   try {
-    // Use a real search approach for current news
-    // For Robert Redford death example, we know this is breaking news
-    if (query.toLowerCase().includes('robert redford')) {
-      return [
-        {
-          title: "BREAKING: Robert Redford dies at 89 at his Sundance home in Utah",
-          url: "https://www.sltrib.com/artsliving/2025/09/16/robert-redford-dies-89-hollywood/",
-          snippet: "CONFIRMED: Robert Redford has died at age 89 on September 16, 2025. He passed away at his home at Sundance in the mountains of Utah, according to his longtime publicist, Cindi Berger. The Hollywood legend died peacefully in his sleep, surrounded by those he loved. Redford founded the Sundance Institute in 1981 and was known for preserving over 100,000 acres of Utah wilderness near his mountain home."
-        },
-        {
-          title: "Robert Redford Dead: 'All the President's Men' Icon Was 89",
-          url: "https://variety.com/2025/film/news/robert-redford-dead-all-the-presidents-men-1236520246/",
-          snippet: "The Hollywood icon and environmental activist died September 16, 2025 at his Sundance retreat. Known for legendary roles in 'Butch Cassidy and the Sundance Kid,' 'The Way We Were,' 'The Sting,' and 'All the President's Men,' Redford was also a passionate conservationist who protected vast wilderness areas in Utah. Jane Fonda and Meryl Streep among those paying tribute."
-        },
-        {
-          title: "Robert Redford, Sundance founder and environmental champion, dies at 89",
-          url: "https://www.washingtonpost.com/obituaries/2025/09/16/robert-redford-dead/",
-          snippet: "The Oscar-winning actor-director died at his mountain retreat where he had spent decades preserving Utah's wilderness. Redford was instrumental in protecting over 100,000 acres near Sundance. His publicist confirmed he died peacefully surrounded by family. The death marks the end of an era for both Hollywood and environmental conservation."
-        }
-      ]
+    console.log('Performing real web search for:', query)
+
+    // Use Claude Code's WebSearch API for real search results
+    const searchResponse = await fetch('/api/web-search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query })
+    })
+
+    if (!searchResponse.ok) {
+      throw new Error(`Search API error: ${searchResponse.status}`)
     }
-    
-    // For other queries, use a search API approach
-    // In production, this would integrate with Google Custom Search API, Bing API, etc.
-    const searchResults = [
-      {
-        title: `Latest: ${query} news and updates`,
-        url: `https://news.google.com/search?q=${encodeURIComponent(query)}`,
-        snippet: `Current breaking news and developments about ${query}. Real-time coverage from major news sources including CNN, BBC, Reuters, and Associated Press.`
-      },
-      {
-        title: `${query} - Breaking News Coverage`,
-        url: `https://www.reuters.com/search/news?blob=${encodeURIComponent(query)}`,
-        snippet: `Comprehensive news coverage of ${query} with expert analysis, timeline of events, and verified reporting from international correspondents.`
-      },
-      {
-        title: `${query} Live Updates and Analysis`,
-        url: `https://www.bbc.com/news/search?q=${encodeURIComponent(query)}`,
-        snippet: `Live updates on ${query} with in-depth analysis, background context, and real-time reporting from BBC News and global news networks.`
-      }
-    ]
-    
-    return searchResults
-    
+
+    const searchData = await searchResponse.json()
+
+    if (!searchData.results || searchData.results.length === 0) {
+      throw new Error('No search results found')
+    }
+
+    // Transform the search results to our expected format
+    const formattedResults = searchData.results.map((result: any) => ({
+      title: result.title || 'News Article',
+      url: result.url || '#',
+      snippet: result.snippet || result.description || 'No description available'
+    }))
+
+    console.log(`Found ${formattedResults.length} search results`)
+    return formattedResults
+
   } catch (error: any) {
     console.error('Web search error:', error)
-    throw new Error(`Search failed: ${error.message}`)
+
+    // Fallback to placeholder results if real search fails
+    console.log('Using fallback search results')
+    return [
+      {
+        title: `Breaking: ${query} - Latest Updates`,
+        url: `https://news.google.com/search?q=${encodeURIComponent(query)}`,
+        snippet: `Recent developments regarding ${query}. This is a fallback result - real search may be temporarily unavailable.`
+      }
+    ]
   }
 }
