@@ -67,6 +67,7 @@ class ClaudeService {
           'Content-Type': 'application/json',
           'x-api-key': this.apiKey,
           'anthropic-version': '2023-06-01',
+          'User-Agent': 'IntroFuse/1.0'
         },
         body: JSON.stringify(requestBody),
       })
