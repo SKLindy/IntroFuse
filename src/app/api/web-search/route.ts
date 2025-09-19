@@ -42,101 +42,163 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Use real web search results for current news
+// Use multiple search strategies for robust news discovery
 async function performWebSearch(query: string) {
   try {
-    console.log('Performing real web search for:', query)
+    console.log('Performing comprehensive web search for:', query)
 
-    // For Jimmy Kimmel search specifically, return the actual current news
-    if (query.toLowerCase().includes('jimmy kimmel')) {
-      return [
-        {
-          title: "ABC pulls Jimmy Kimmel show off air 'indefinitely' over Charlie Kirk comments",
-          url: "https://www.cnbc.com/2025/09/17/charlie-kirk-jimmy-kimmel-abc-disney.html",
-          snippet: "ABC has pulled 'Jimmy Kimmel Live!' off the air indefinitely after controversial comments its host made about the alleged killer of conservative activist Charlie Kirk. The suspension was announced late Wednesday, spurring outcry and accusations that ABC had buckled to a censorship campaign targeting one of President Donald Trump's most vocal critics."
-        },
-        {
-          title: "ABC Pulls 'Jimmy Kimmel Live!' After Charlie Kirk Comments",
-          url: "https://variety.com/2025/tv/news/nexstar-jimmy-kimmel-abc-charlie-kirk-1236522584/",
-          snippet: "Federal Communications Commission Chair Brendan Carr suggested ABC's broadcast license was at risk from Kimmel's statements. Before ABC's announcement, Nexstar Media Group said its ABC-affiliated stations would preempt Kimmel's show 'for the foreseeable future' because they strongly object to recent comments made by Mr. Kimmel concerning the killing of Charlie Kirk."
-        },
-        {
-          title: "Jimmy Kimmel suspension after Kirk comments sparks reactions on censorship",
-          url: "https://www.washingtonpost.com/entertainment/tv/2025/09/18/jimmy-kimmel-suspension-celebrities-react/",
-          snippet: "The suspension follows the recent cancellation of 'The Late Show with Stephen Colbert,' with Democratic Senator Elizabeth Warren commenting: 'First Colbert, now Kimmel. Last-minute settlements, secret side deals, multi-billion dollar mergers pending Donald Trump's approval.' President Trump reacted on Truth Social, writing: 'Great News for America: The ratings challenged Jimmy Kimmel Show is CANCELLED.'"
-        }
-      ]
-    }
-
-    // For Kissing Bug disease searches, return current health news
-    if (query.toLowerCase().includes('kissing bug')) {
-      return [
-        {
-          title: "Kissing bug: Chagas disease is now endemic to the US, scientists say",
-          url: "https://www.cnn.com/2025/09/16/health/kissing-bug-chagas-endemic-us",
-          snippet: "Chagas disease should now be considered endemic in the United States, experts say. Scientists have found kissing bugs in 32 states. The CDC estimates that about 280,000 people in the US have Chagas at any given time. The blood-sucking insect mostly lives in warmer Southern states, but with climate change causing more bug-friendly temperatures, there's a good chance they have spread."
-        },
-        {
-          title: "CDC issues warning for new reported Kissing Bug Disease cases",
-          url: "https://www.wtkr.com/news/in-the-community/norfolk/cdc-issues-warning-for-new-reported-kissing-bug-disease-cases",
-          snippet: "Chagas is one of the leading causes of heart disease in Latin America, and it causes more disability than other insect-borne infections, even more than malaria and Zika. The CDC says the parasitic disease is often fatal if not treated, and can linger in a body for years. Most reported U.S. cases are in Texas, but others have been documented in California, Arizona, Tennessee, Louisiana, Missouri, Mississippi and Arkansas."
-        },
-        {
-          title: "'Kissing bug' disease is here to stay in the US, experts say. Here's why it's spreading",
-          url: "https://www.accuweather.com/en/health-wellness/kissing-bug-disease-is-here-to-stay-in-the-us-experts-say-heres-why-its-spreading/1816508",
-          snippet: "Chagas largely spreads when triatomine bugs, commonly known as kissing bugs, bite a human while they're sleeping. The parasites can enter the body through the eyes, mouth, a cut or scratch, or the wound from the bug's bite. Scratching or rubbing the bite site, which often happens during sleep, helps the parasites enter the body."
-        }
-      ]
-    }
-
-    // For other news topics, try RSS parsing or use intelligent fallback
     const searchResults = []
 
-    // Try to fetch from Google News RSS
-    try {
-      const googleNewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`
-      const response = await fetch(googleNewsUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      })
-
-      if (response.ok) {
-        const rssText = await response.text()
-        const items = rssText.match(/<item>[\s\S]*?<\/item>/g) || []
-
-        for (const item of items.slice(0, 3)) {
-          const title = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ||
-                       item.match(/<title>(.*?)<\/title>/)?.[1] || 'News Article'
-          const link = item.match(/<link>(.*?)<\/link>/)?.[1] || '#'
-          const description = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] ||
-                             item.match(/<description>(.*?)<\/description>/)?.[1] || 'No description available'
-
-          searchResults.push({
-            title: title.replace(/<[^>]*>/g, ''),
-            url: link,
-            snippet: description.replace(/<[^>]*>/g, '').substring(0, 200) + '...'
-          })
-        }
+    // Strategy 1: Try multiple RSS news feeds
+    const newsSources = [
+      {
+        name: 'Google News',
+        url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`,
+        parser: 'google'
+      },
+      {
+        name: 'Reuters',
+        url: `https://www.reuters.com/arc/outboundfeeds/rss/category/world/?q=${encodeURIComponent(query)}`,
+        parser: 'standard'
+      },
+      {
+        name: 'AP News',
+        url: `https://feeds.apnews.com/rss/apf-topnews`,
+        parser: 'standard'
       }
-    } catch (rssError) {
-      console.log('RSS fetch failed, using fallback:', rssError)
+    ]
+
+    // Try each news source
+    for (const source of newsSources) {
+      try {
+        console.log(`Trying ${source.name} for: ${query}`)
+
+        const response = await fetch(source.url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/rss+xml, application/xml, text/xml',
+            'Cache-Control': 'no-cache'
+          },
+          timeout: 10000
+        })
+
+        if (response.ok) {
+          const rssText = await response.text()
+          console.log(`${source.name} response length:`, rssText.length)
+
+          // Parse RSS content
+          const items = rssText.match(/<item>[\s\S]*?<\/item>/g) ||
+                       rssText.match(/<entry>[\s\S]*?<\/entry>/g) || []
+
+          console.log(`Found ${items.length} items from ${source.name}`)
+
+          for (const item of items.slice(0, 5)) {
+            // Extract title
+            const title = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ||
+                         item.match(/<title[^>]*>(.*?)<\/title>/)?.[1] ||
+                         'News Article'
+
+            // Extract link
+            const link = item.match(/<link[^>]*>(.*?)<\/link>/)?.[1] ||
+                        item.match(/<link[^>]*href="([^"]*)"[^>]*>/)?.[1] ||
+                        item.match(/<guid[^>]*>(.*?)<\/guid>/)?.[1] ||
+                        '#'
+
+            // Extract description/content
+            const description = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] ||
+                              item.match(/<description[^>]*>(.*?)<\/description>/)?.[1] ||
+                              item.match(/<content[^>]*>(.*?)<\/content>/)?.[1] ||
+                              item.match(/<summary[^>]*>(.*?)<\/summary>/)?.[1] ||
+                              'No description available'
+
+            // Clean up content
+            const cleanTitle = title.replace(/<[^>]*>/g, '').trim()
+            const cleanDescription = description.replace(/<[^>]*>/g, '').trim()
+
+            // Check relevance to query
+            const queryLower = query.toLowerCase()
+            const contentLower = (cleanTitle + ' ' + cleanDescription).toLowerCase()
+
+            if (contentLower.includes(queryLower) ||
+                queryLower.split(' ').some(word => word.length > 3 && contentLower.includes(word))) {
+
+              searchResults.push({
+                title: cleanTitle,
+                url: link.startsWith('http') ? link : `https://news.google.com${link}`,
+                snippet: cleanDescription.substring(0, 250) + (cleanDescription.length > 250 ? '...' : ''),
+                source: source.name
+              })
+            }
+          }
+        }
+      } catch (sourceError) {
+        console.log(`${source.name} failed:`, sourceError.message)
+      }
     }
 
-    // If no RSS results, provide informed fallback
+    // Strategy 2: If no relevant results, try broader search
     if (searchResults.length === 0) {
+      console.log('No RSS results found, trying broader search approaches')
+
+      // Try general news topics
+      const generalNewsUrl = 'https://feeds.bbci.co.uk/news/rss.xml'
+      try {
+        const response = await fetch(generalNewsUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        })
+
+        if (response.ok) {
+          const rssText = await response.text()
+          const items = rssText.match(/<item>[\s\S]*?<\/item>/g) || []
+
+          for (const item of items.slice(0, 10)) {
+            const title = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ||
+                         item.match(/<title>(.*?)<\/title>/)?.[1] || 'News Article'
+            const link = item.match(/<link>(.*?)<\/link>/)?.[1] || '#'
+            const description = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/)?.[1] ||
+                              item.match(/<description>(.*?)<\/description>/)?.[1] || ''
+
+            const cleanTitle = title.replace(/<[^>]*>/g, '').trim()
+            const cleanDescription = description.replace(/<[^>]*>/g, '').trim()
+
+            // Check for query relevance
+            const queryWords = query.toLowerCase().split(' ').filter(w => w.length > 2)
+            const content = (cleanTitle + ' ' + cleanDescription).toLowerCase()
+
+            if (queryWords.some(word => content.includes(word))) {
+              searchResults.push({
+                title: cleanTitle,
+                url: link,
+                snippet: cleanDescription.substring(0, 200) + '...',
+                source: 'BBC News'
+              })
+            }
+          }
+        }
+      } catch (bbcError) {
+        console.log('BBC News fallback failed:', bbcError.message)
+      }
+    }
+
+    // Strategy 3: Final fallback with informative placeholder
+    if (searchResults.length === 0) {
+      console.log('All search strategies failed, using informed fallback')
+
       searchResults.push({
-        title: `Breaking: ${query} - Current News Coverage`,
+        title: `Current News: ${query}`,
         url: `https://news.google.com/search?q=${encodeURIComponent(query)}`,
-        snippet: `Current news developments regarding ${query}. Multiple sources are reporting on this developing story. Check major news outlets for the latest verified information and updates.`
+        snippet: `While specific details about "${query}" weren't found in our current news feeds, this appears to be a developing story. For the most current information, check major news outlets like CNN, BBC, Reuters, or Associated Press for verified reporting and updates.`,
+        source: 'Fallback'
       })
     }
 
-    console.log(`Found ${searchResults.length} search results`)
-    return searchResults
+    console.log(`Final result: Found ${searchResults.length} search results for "${query}"`)
+    return searchResults.slice(0, 5) // Limit to top 5 results
 
   } catch (error: any) {
-    console.error('Web search error:', error)
+    console.error('Comprehensive web search error:', error)
     throw new Error(`Search failed: ${error.message}`)
   }
 }
