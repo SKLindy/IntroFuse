@@ -103,7 +103,10 @@ export function DashboardLayout() {
     <div className="min-h-screen p-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-900 dark:via-indigo-900 dark:to-blue-800">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100">IntroFuse</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100">IntroFuse</h1>
+            <p className="text-sm text-blue-900 dark:text-blue-100 mt-1">by Lindy Media AI</p>
+          </div>
           <SignOutButton>
             <button className="flex items-center gap-2 px-3 py-2 text-sm border border-blue-200 rounded-md hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-800 transition-colors shadow-md">
               <LogOut className="w-4 h-4" />
@@ -209,6 +212,11 @@ export function DashboardLayout() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-12 mb-4">
+          <p className="text-sm text-blue-900 dark:text-blue-100">2025 Lindy Media AI Consulting. All Rights Reserved.</p>
         </div>
       </div>
     </div>
